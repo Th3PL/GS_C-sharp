@@ -1,0 +1,6 @@
+@FutureWork_HostAddress = http://localhost:5131
+
+GET {{FutureWork_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
