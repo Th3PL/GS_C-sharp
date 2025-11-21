@@ -1,6 +1,7 @@
 ﻿using Data;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.DTO.Funcionario;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Business
 {
+
 
     public class FuncionarioService : IFuncionarioService
     {
@@ -19,53 +21,78 @@ namespace Business
             _context = context;
         }
 
-
-        public async Task<IEnumerable<Funcionario>> GetAllAsync()
+        public async Task<IEnumerable<FuncionarioDto>> GetAllAsync()
         {
             return await _context.Funcionarios
-                                 .Include(f => f.Gestor)
-                                 .ToListAsync();
+                .Select(f => new FuncionarioDto(
+                    f.Id,
+                    f.Nome,
+                    f.Email,
+                    f.Matricula,
+                    f.GestorId,
+                    f.Gestor != null ? f.Gestor.Nome : null
+                ))
+                .ToListAsync();
         }
 
-        public async Task<Funcionario?> GetByIdAsync(int id)
+        public async Task<FuncionarioDto?> GetByIdAsync(int id)
         {
             return await _context.Funcionarios
-                                 .Include(f => f.Gestor)
-                                 .FirstOrDefaultAsync(f => f.Id == id);
+                .Where(f => f.Id == id)
+                .Select(f => new FuncionarioDto(
+                    f.Id,
+                    f.Nome,
+                    f.Email,
+                    f.Matricula,
+                    f.GestorId,
+                    f.Gestor != null ? f.Gestor.Nome : null
+                ))
+                .FirstOrDefaultAsync();
         }
 
-
-        public async Task<Funcionario> CreateAsync(Funcionario funcionario)
+        public async Task<FuncionarioDto> CreateAsync(CreateFuncionarioDto dto)
         {
-            _context.Funcionarios.Add(funcionario);
+            var entity = new Funcionario
+            {
+                Nome = dto.Nome,
+                Email = dto.Email,
+                Matricula = dto.Matricula,
+                GestorId = dto.GestorId,
+                CriadoEm = DateTime.UtcNow
+            };
+
+            _context.Funcionarios.Add(entity);
             await _context.SaveChangesAsync();
-            return funcionario;
+
+            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, entity.GestorId, null);
         }
 
-        public async Task<Funcionario> UpdateAsync(int id, Funcionario funcionario)
+        public async Task<FuncionarioDto> UpdateAsync(int id, UpdateFuncionarioDto dto)
         {
-            var existing = await _context.Funcionarios.FindAsync(id);
-            if (existing == null) throw new KeyNotFoundException("Funcionário não encontrado");
+            var entity = await _context.Funcionarios.FindAsync(id);
+            if (entity == null) throw new KeyNotFoundException("Funcionário não encontrado");
 
-            existing.Nome = funcionario.Nome;
-            existing.Email = funcionario.Email;
-            existing.Matricula = funcionario.Matricula;
-            existing.GestorId = funcionario.GestorId;
-            existing.AtualizadoEm = DateTime.UtcNow;
+            entity.Nome = dto.Nome;
+            entity.Email = dto.Email;
+            entity.Matricula = dto.Matricula;
+            entity.GestorId = dto.GestorId;
+            entity.AtualizadoEm = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            return existing;
+
+            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, entity.GestorId, null);
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var funcionario = await _context.Funcionarios.FindAsync(id);
-            if (funcionario == null) return false;
+            var entity = await _context.Funcionarios.FindAsync(id);
+            if (entity == null) return false;
 
-            _context.Funcionarios.Remove(funcionario);
+            _context.Funcionarios.Remove(entity);
             await _context.SaveChangesAsync();
             return true;
         }
     }
+
 
 }

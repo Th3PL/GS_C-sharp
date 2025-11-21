@@ -1,6 +1,7 @@
 ﻿using Data;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.DTO.Gestor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,6 @@ using System.Threading.Tasks;
 
 namespace Business
 {
-
 
     public class GestorService : IGestorService
     {
@@ -20,47 +20,85 @@ namespace Business
             _context = context;
         }
 
-        public async Task<IEnumerable<Gestor>> GetAllAsync()
+        public async Task<IEnumerable<GestorDto>> GetAllAsync()
         {
             return await _context.Gestores
-                                 .Include(g => g.Funcionarios)
-                                 .ToListAsync();
+                .Select(g => new GestorDto(
+                    g.Id,
+                    g.Nome,
+                    g.Email,
+                    g.Matricula,
+                    g.Funcionarios.Select(f => new FuncionarioLiteDto(
+                        f.Id, f.Nome, f.Email, f.Matricula
+                    ))
+                ))
+                .ToListAsync();
         }
 
-        public async Task<Gestor?> GetByIdAsync(int id)
+        public async Task<GestorDto?> GetByIdAsync(int id)
         {
             return await _context.Gestores
-                                 .Include(g => g.Funcionarios)
-                                 .FirstOrDefaultAsync(g => g.Id == id);
+                .Where(g => g.Id == id)
+                .Select(g => new GestorDto(
+                    g.Id,
+                    g.Nome,
+                    g.Email,
+                    g.Matricula,
+                    g.Funcionarios.Select(f => new FuncionarioLiteDto(
+                        f.Id, f.Nome, f.Email, f.Matricula
+                    ))
+                ))
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<Gestor> CreateAsync(Gestor gestor)
+        public async Task<GestorDto> CreateAsync(CreateGestorDto dto)
         {
-            _context.Gestores.Add(gestor);
+            var entity = new Gestor
+            {
+                Nome = dto.Nome,
+                Email = dto.Email,
+                Matricula = dto.Matricula,
+                CriadoEm = DateTime.UtcNow
+            };
+
+            _context.Gestores.Add(entity);
             await _context.SaveChangesAsync();
-            return gestor;
+
+            return new GestorDto(
+                entity.Id,
+                entity.Nome,
+                entity.Email,
+                entity.Matricula,
+                Enumerable.Empty<FuncionarioLiteDto>()
+            );
         }
 
-        public async Task<Gestor> UpdateAsync(int id, Gestor gestor)
+        public async Task<GestorDto> UpdateAsync(int id, UpdateGestorDto dto)
         {
-            var existing = await _context.Gestores.FindAsync(id);
-            if (existing == null) throw new KeyNotFoundException("Gestor não encontrado");
+            var entity = await _context.Gestores.FindAsync(id);
+            if (entity == null) throw new KeyNotFoundException("Gestor não encontrado");
 
-            existing.Nome = gestor.Nome;
-            existing.Email = gestor.Email;
-            existing.Matricula = gestor.Matricula;
-            existing.AtualizadoEm = DateTime.UtcNow;
+            entity.Nome = dto.Nome;
+            entity.Email = dto.Email;
+            entity.Matricula = dto.Matricula;
+            entity.AtualizadoEm = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            return existing;
+
+            var funcionariosLite = await _context.Funcionarios
+                .Where(f => f.GestorId == entity.Id)
+                .Select(f => new FuncionarioLiteDto(f.Id, f.Nome, f.Email, f.Matricula))
+                .ToListAsync();
+
+            return new GestorDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, funcionariosLite);
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var gestor = await _context.Gestores.FindAsync(id);
-            if (gestor == null) return false;
+            var entity = await _context.Gestores.FindAsync(id);
+            if (entity == null) return false;
 
-            _context.Gestores.Remove(gestor);
+            _context.Gestores.Remove(entity);
             await _context.SaveChangesAsync();
             return true;
         }

@@ -1,4 +1,5 @@
 ﻿using Model;
+using Model.DTO.Funcionario;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace Business
 {
-
     public interface IFuncionarioService
     {
-        Task<IEnumerable<Funcionario>> GetAllAsync();
-        Task<Funcionario?> GetByIdAsync(int id);
-        Task<Funcionario> CreateAsync(Funcionario funcionario);
-        Task<Funcionario> UpdateAsync(int id, Funcionario funcionario);
+        Task<IEnumerable<FuncionarioDto>> GetAllAsync();
+        Task<FuncionarioDto?> GetByIdAsync(int id);
+        Task<FuncionarioDto> CreateAsync(CreateFuncionarioDto dto);
+        Task<FuncionarioDto> UpdateAsync(int id, UpdateFuncionarioDto dto);
         Task<bool> DeleteAsync(int id);
     }
+
 
 }
