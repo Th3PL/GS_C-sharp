@@ -11,7 +11,6 @@ namespace Model.DTO.Funcionario
         string Nome,
         string? Email,
         string? Matricula,
-        int? GestorId,
-        string? GestorNome
+        int? GestorId
     );
 }

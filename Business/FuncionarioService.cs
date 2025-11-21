@@ -29,11 +29,11 @@ namespace Business
                     f.Nome,
                     f.Email,
                     f.Matricula,
-                    f.GestorId,
-                    f.Gestor != null ? f.Gestor.Nome : null
+                    f.GestorId
                 ))
                 .ToListAsync();
         }
+
 
         public async Task<FuncionarioDto?> GetByIdAsync(int id)
         {
@@ -44,11 +44,11 @@ namespace Business
                     f.Nome,
                     f.Email,
                     f.Matricula,
-                    f.GestorId,
-                    f.Gestor != null ? f.Gestor.Nome : null
+                    f.GestorId
                 ))
                 .FirstOrDefaultAsync();
         }
+
 
         public async Task<FuncionarioDto> CreateAsync(CreateFuncionarioDto dto)
         {
@@ -64,7 +64,7 @@ namespace Business
             _context.Funcionarios.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, entity.GestorId, null);
+            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula,null);
         }
 
         public async Task<FuncionarioDto> UpdateAsync(int id, UpdateFuncionarioDto dto)
@@ -80,7 +80,7 @@ namespace Business
 
             await _context.SaveChangesAsync();
 
-            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, entity.GestorId, null);
+            return new FuncionarioDto(entity.Id, entity.Nome, entity.Email, entity.Matricula, entity.GestorId);
         }
 
         public async Task<bool> DeleteAsync(int id)
