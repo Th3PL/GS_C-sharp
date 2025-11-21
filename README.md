@@ -10,7 +10,7 @@ Nosso sistema é uma **API RESTful** desenvolvida em **C# (.NET 8)** com **Entit
 ---
 
 ## 🎥 Link para o vídeo de demonstração
-👉 [**Assista à demonstração no YouTube**](https://www.youtube.com/seu-link-aqui)
+👉 [**Assista à demonstração no YouTube**](https://youtu.be/kRLkS1rPJNY)
 
 ---
 
